@@ -2,6 +2,7 @@ const User = require('../models/UserModel');
 const appError = require('../utils/appError');
 const { deleteOne, updateOne, getOne, getAll } = require('./handlerFactory');
 const catchAsync = require('../utils/catchAsync');
+const cloudinary = require('../config/cloudinary');
 const filterObj = (obj, ...allowedfields) => {
   const newObj = {};
   Object.keys(obj).forEach((el) => {
@@ -22,6 +23,30 @@ const updateMe = catchAsync(async (req, res, next) => {
   }
   //2) update user document
   const filteredBody = filterObj(req.body, 'name', 'email');
+  let photo;
+  const uploadBuffer = (fileBuffer) => {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'users' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+
+      stream.end(fileBuffer);
+    });
+  };
+
+  if (req.file) {
+    const result = await uploadBuffer(req.file.buffer);
+    photo = {
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+    filteredBody.photo = photo;
+  }
+
   const updateUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,

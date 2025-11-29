@@ -8,6 +8,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
 const app = express();
+const cookieParser = require('cookie-parser');
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -16,7 +17,7 @@ const allowedOrigins = [
 ];
 
 const cors = require('cors');
-
+app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -30,6 +31,8 @@ app.use(
     credentials: true,
   })
 );
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 //1) set security http header
 app.use(helmet());
 app.use(morgan('dev'));
@@ -51,6 +54,7 @@ if (process.env.NODE_ENV === 'development') app.use(morgan('dev')); //Every inco
 app.use(hpp());
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.cookies);
   next();
 });
 const tourRoute = require('../routes/tourRoutes.js');
