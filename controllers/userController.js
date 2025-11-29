@@ -40,11 +40,10 @@ const updateMe = catchAsync(async (req, res, next) => {
 
   if (req.file) {
     const result = await uploadBuffer(req.file.buffer);
-    photo = {
+    filteredBody.photo = {
       url: result.secure_url,
       public_id: result.public_id,
     };
-    filteredBody.photo = photo;
   }
 
   const updateUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
