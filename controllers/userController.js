@@ -17,28 +17,28 @@ const getMe = (req, res, next) => {
   next();
 };
 const updateMe = catchAsync(async (req, res, next) => {
-  //1)create error if the user tries to update password here
+  // 1) Prevent password updates here
   if (req.body.password || req.body.passwordConfirm) {
-    return next(new appError("this route isn't for updating password", 400));
+    return next(new appError("This route isn't for updating password!", 400));
   }
-  //2) update user document
+
+  // 2) Filter only allowed fields
   const filteredBody = filterObj(req.body, 'name', 'email');
-  let photo;
-  const uploadBuffer = (fileBuffer) => {
-    return new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'users' },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        }
-      );
 
-      stream.end(fileBuffer);
-    });
-  };
-
+  // 3) Handle photo upload if exists
   if (req.file) {
+    const uploadBuffer = (fileBuffer) =>
+      new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'users' },
+          (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+          }
+        );
+        stream.end(fileBuffer);
+      });
+
     const result = await uploadBuffer(req.file.buffer);
     filteredBody.photo = {
       url: result.secure_url,
@@ -46,15 +46,16 @@ const updateMe = catchAsync(async (req, res, next) => {
     };
   }
 
-  const updateUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
-    new: true,
-    runValidators: true,
-  });
+  // 4) Find user and update
+  const user = await User.findById(req.user.id);
+  if (!user) return next(new appError('User not found', 404));
+
+  Object.assign(user, filteredBody); // Merge changes
+  await user.save(); // triggers pre-save hooks
+
   res.status(200).json({
     status: 'success',
-    data: {
-      updateUser,
-    },
+    data: { user },
   });
 });
 const deleteMe = catchAsync(async (req, res, next) => {
