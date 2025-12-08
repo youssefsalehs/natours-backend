@@ -11,7 +11,7 @@ const filterObj = (obj, ...allowedfields) => {
   return newObj;
 };
 const getAllUsers = getAll(User);
-const getUser = getOne(User);
+const getUser = getOne(User, 'reviews');
 const getMe = (req, res, next) => {
   req.params.id = req.user.id;
   next();

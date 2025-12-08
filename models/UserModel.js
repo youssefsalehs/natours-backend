@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'guide', 'lead-guide', 'admin'],
       default: 'user',
     },
+    // reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
     password: {
       type: String,
       required: [true, 'Please Provide A Password!'],
@@ -54,8 +55,13 @@ const userSchema = new mongoose.Schema(
     passwordResetTokenExpires: Date,
     active: { type: Boolean, default: true, select: false },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+userSchema.virtual('reviews', {
+  ref: 'Review', // The model to use
+  foreignField: 'user', // Field in Review that references this user
+  localField: '_id', // Field in User
+});
 
 // Encrypt password
 userSchema.pre('save', async function (next) {

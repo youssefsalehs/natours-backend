@@ -40,10 +40,12 @@ const createOne = (Model) =>
 const getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
+    console.log(popOptions);
     if (popOptions) {
       query = Model.findById(req.params.id).populate(popOptions);
     }
     const doc = await query;
+    console.log(doc);
     if (!doc) {
       return next(new appError('No document is found with this ID', 404));
     }
