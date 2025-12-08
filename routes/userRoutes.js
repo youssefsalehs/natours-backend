@@ -10,7 +10,7 @@ const {
   deleteMe,
   getMe,
 } = require('./../controllers/userController');
-
+const reviewRouter = require('./reviewRoutes');
 const {
   signUp,
   login,
@@ -32,7 +32,7 @@ router.post('/signup', signUp);
 router.post('/login', login);
 router.post('/forgetPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
-
+router.use('/:userId/reviews', reviewRouter);
 router.use(protect);
 router.patch('/updatePassword', updatePassword);
 router.route('/me').get(getMe, getUser);

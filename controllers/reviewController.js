@@ -11,7 +11,9 @@ const {
 const getAllReviews = getAll(Review);
 const setTourUserIds = (req, res, next) => {
   if (!req.body.tourId) req.body.tour = req.params.tourId;
-  if (!req.body.userId) req.body.user = req.user.id;
+  if (!req.body.userId) {
+    req.body.user = req.user.id;
+  }
   next();
 };
 const getReview = getOne(Review);
