@@ -23,10 +23,17 @@ const getTour = getOne(Tour, { path: 'reviews' });
 const createTour = catchAsync(async (req, res) => {
   const tourData = { ...req.body };
 
+  if (req.body.startLocation) {
+    tourData.startLocation = JSON.parse(req.body.startLocation);
+  }
+  if (req.body.locations) {
+    tourData.locations = JSON.parse(req.body.locations);
+  }
+
   const uploadBuffer = (fileBuffer, folder) => {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: 'tours' },
+        { folder },
         (error, result) => {
           if (error) return reject(error);
           resolve(result);
@@ -60,6 +67,7 @@ const createTour = catchAsync(async (req, res) => {
     }
   }
 
+  // Create tour
   const newTour = await Tour.create(tourData);
 
   res.status(201).json({
