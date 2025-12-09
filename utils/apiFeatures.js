@@ -9,9 +9,17 @@ class APIFeatures {
     excludedFields.forEach((el) => delete queryObj[el]);
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
-    this.query = this.query.find(JSON.parse(queryStr));
+
+    let parsedQuery = JSON.parse(queryStr);
+    if (parsedQuery.role?.in) {
+      const roles = parsedQuery.role.in.split(',');
+      parsedQuery.role = { $in: roles };
+    }
+    this.query = this.query.find(parsedQuery);
+
     return this;
   }
+
   sort() {
     if (this.queryString.sort) {
       let sortBy = this.queryString.sort.split(',').join(' ');

@@ -1,7 +1,7 @@
 const Tour = require('./../models/TourModel');
 
 const catchAsync = require('../utils/catchAsync');
-
+const cloudinary = require('../config/cloudinary');
 const {
   deleteOne,
   updateOne,
@@ -20,7 +20,54 @@ const aliasTopTours = (req, res, next) => {
 
 const getAllTours = getAll(Tour);
 const getTour = getOne(Tour, { path: 'reviews' });
-const createTour = createOne(Tour);
+const createTour = catchAsync(async (req, res) => {
+  const tourData = { ...req.body };
+
+  const uploadBuffer = (fileBuffer, folder) => {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'tours' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
+      stream.end(fileBuffer);
+    });
+  };
+
+  // Upload imageCover if exists
+  if (req.files?.imageCover?.length) {
+    const result = await uploadBuffer(
+      req.files.imageCover[0].buffer,
+      'tours/cover'
+    );
+    tourData.imageCover = {
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+  }
+
+  // Upload tour images if exists
+  if (req.files?.images?.length) {
+    tourData.images = [];
+    for (const file of req.files.images) {
+      const result = await uploadBuffer(file.buffer, 'tours/images');
+      tourData.images.push({
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
+    }
+  }
+
+  const newTour = await Tour.create(tourData);
+
+  res.status(201).json({
+    status: 'success',
+    data: newTour,
+  });
+});
+
 const updateTour = updateOne(Tour);
 const deleteTour = deleteOne(Tour);
 

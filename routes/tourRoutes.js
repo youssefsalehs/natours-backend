@@ -12,8 +12,15 @@ const {
   getToursWithin,
   getDistances,
 } = require('./../controllers/tourController');
+const multer = require('multer');
 const { protect, restrictTo } = require('./../controllers/authController');
+const storage = multer.memoryStorage();
 
+const upload = multer({ storage });
+const uploadTourImages = upload.fields([
+  { name: 'imageCover', maxCount: 1 },
+  { name: 'images', maxCount: 3 },
+]);
 const reviewRouter = require('./reviewRoutes');
 router.use('/:tourId/reviews', reviewRouter);
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
@@ -30,7 +37,12 @@ router
 router
   .route('/')
   .get(getAllTours)
-  .post(protect, restrictTo('admin', 'lead-guide'), createTour);
+  .post(
+    protect,
+    restrictTo('admin', 'lead-guide'),
+    uploadTourImages,
+    createTour
+  );
 router
   .route('/:id')
   .get(getTour)
