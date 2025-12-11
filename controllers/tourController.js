@@ -76,7 +76,61 @@ const createTour = catchAsync(async (req, res) => {
   });
 });
 
-const updateTour = updateOne(Tour);
+const updateTour = catchAsync(async (req, res) => {
+  const tourData = { ...req.body };
+
+  // Parse JSON fields
+  if (req.body.startLocation)
+    tourData.startLocation = JSON.parse(req.body.startLocation);
+  if (req.body.locations) tourData.locations = JSON.parse(req.body.locations);
+  if (req.body.guides) tourData.guides = JSON.parse(req.body.guides);
+
+  const uploadBuffer = (fileBuffer, folder) => {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder },
+        (err, result) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
+      stream.end(fileBuffer);
+    });
+  };
+
+  if (req.files?.imageCover?.length) {
+    const result = await uploadBuffer(
+      req.files.imageCover[0].buffer,
+      'tours/cover'
+    );
+    tourData.imageCover = {
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+  }
+
+  if (req.files?.images?.length) {
+    tourData.images = [];
+    for (const file of req.files.images) {
+      const result = await uploadBuffer(file.buffer, 'tours/images');
+      tourData.images.push({
+        url: result.secure_url,
+        public_id: result.public_id,
+      });
+    }
+  }
+
+  const updatedTour = await Tour.findByIdAndUpdate(req.params.id, tourData, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!updatedTour)
+    return next(new appError('No document found with this ID', 404));
+
+  res.status(200).json({ status: 'success', data: { data: updatedTour } });
+});
+
 const deleteTour = deleteOne(Tour);
 
 const getTourStats = catchAsync(async (req, res, next) => {
