@@ -79,10 +79,6 @@ const createTour = catchAsync(async (req, res) => {
 const updateTour = catchAsync(async (req, res) => {
   const tourData = { ...req.body };
 
-  // Parse JSON fields
-  if (req.body.startLocation)
-    tourData.startLocation = JSON.parse(req.body.startLocation);
-
   const uploadBuffer = (fileBuffer, folder) => {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
