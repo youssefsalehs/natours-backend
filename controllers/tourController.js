@@ -83,7 +83,6 @@ const updateTour = catchAsync(async (req, res) => {
   if (req.body.startLocation)
     tourData.startLocation = JSON.parse(req.body.startLocation);
   if (req.body.locations) tourData.locations = JSON.parse(req.body.locations);
-  if (req.body.guides) tourData.guides = JSON.parse(req.body.guides);
 
   const uploadBuffer = (fileBuffer, folder) => {
     return new Promise((resolve, reject) => {
