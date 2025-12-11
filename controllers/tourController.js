@@ -76,8 +76,22 @@ const createTour = catchAsync(async (req, res) => {
   });
 });
 
-const updateTour = catchAsync(async (req, res) => {
+const updateTour = catchAsync(async (req, res, next) => {
   const tourData = { ...req.body };
+
+  // تحويل الحقول اللي جايه من FormData من string لمصفوفة/كائن
+  if (tourData.guides) {
+    tourData.guides = JSON.parse(tourData.guides); // Array of ObjectIds
+  }
+  if (tourData.startDates) {
+    tourData.startDates = JSON.parse(tourData.startDates); // Array of dates
+  }
+  if (tourData.locations) {
+    tourData.locations = JSON.parse(tourData.locations); // Array of objects
+  }
+  if (tourData.startLocation) {
+    tourData.startLocation = JSON.parse(tourData.startLocation); // Object
+  }
 
   const uploadBuffer = (fileBuffer, folder) => {
     return new Promise((resolve, reject) => {
@@ -92,6 +106,7 @@ const updateTour = catchAsync(async (req, res) => {
     });
   };
 
+  // رفع صورة الغلاف
   if (req.files?.imageCover?.length) {
     const result = await uploadBuffer(
       req.files.imageCover[0].buffer,
@@ -103,6 +118,7 @@ const updateTour = catchAsync(async (req, res) => {
     };
   }
 
+  // رفع باقي الصور
   if (req.files?.images?.length) {
     tourData.images = [];
     for (const file of req.files.images) {
@@ -114,6 +130,7 @@ const updateTour = catchAsync(async (req, res) => {
     }
   }
 
+  // تحديث التور
   const updatedTour = await Tour.findByIdAndUpdate(req.params.id, tourData, {
     new: true,
     runValidators: true,
