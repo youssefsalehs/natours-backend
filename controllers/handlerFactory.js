@@ -42,7 +42,9 @@ const getOne = (Model, popOptions) =>
     let query = Model.findById(req.params.id);
     console.log(popOptions);
     if (popOptions) {
-      query = Model.findById(req.params.id).populate(popOptions);
+      query = Model.findById(req.params.id)
+        .setOptions({ currentUser: req.user })
+        .populate(popOptions);
     }
     const doc = await query;
     console.log(doc);
