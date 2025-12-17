@@ -25,7 +25,7 @@ const reviewSchema = new mongoose.Schema(
       type: Date,
       default: Date.now(),
     },
-    status: {
+    review: {
       type: Boolean,
       default: true,
     },

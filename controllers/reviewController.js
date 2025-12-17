@@ -30,8 +30,7 @@ const suspendReview = catchAsync(async (req, res, next) => {
     return next(new AppError('Review not found', 404));
   }
 
-  // Toggle suspended/active status
-  review.status = review.status ? false : true;
+  review.active = review.active ? false : true;
   await review.save();
 
   res.status(200).json({
