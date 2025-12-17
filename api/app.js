@@ -13,7 +13,7 @@ const cookieParser = require('cookie-parser');
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://natours-backend-six.vercel.app/api/v1',
+  'https://natours-backend-six.vercel.app/',
 ];
 
 const cors = require('cors');
