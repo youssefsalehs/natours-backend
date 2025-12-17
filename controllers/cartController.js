@@ -66,7 +66,9 @@ const updateTourInCart = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
   const { tourId, operation } = req.params;
 
-  const cart = await Cart.findOne({ cartOwner: userId });
+  const cart = await Cart.findOne({ cartOwner: userId }).setOptions({
+    currentUser: req.user,
+  });
   if (!cart) return next(new appError('Cart not found', 404));
 
   const tourItem = cart.tours.find((t) => t.tour.toString() === tourId);
@@ -100,7 +102,9 @@ const deleteTourFromCart = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
   const { tourId } = req.params;
 
-  const cart = await Cart.findOne({ cartOwner: userId });
+  const cart = await Cart.findOne({ cartOwner: userId }).setOptions({
+    currentUser: req.user,
+  });
   if (!cart) return next(new appError('Cart not found', 404));
   cart.tours = cart.tours.filter((t) => t.tour.toString() !== tourId);
   cart.tours.forEach((t) => {
@@ -119,7 +123,9 @@ const deleteTourFromCart = catchAsync(async (req, res, next) => {
 const clearUserCart = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
 
-  const cart = await Cart.findOne({ cartOwner: userId });
+  const cart = await Cart.findOne({ cartOwner: userId }).setOptions({
+    currentUser: req.user,
+  });
   if (!cart) return next(new appError('Cart not found', 404));
 
   cart.tours = [];
