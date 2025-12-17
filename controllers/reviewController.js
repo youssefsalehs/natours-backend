@@ -1,4 +1,5 @@
 const Review = require('../models/ReviewModel');
+const catchAsync = require('../utils/catchAsync');
 
 const {
   deleteOne,
@@ -23,7 +24,21 @@ const createReview = createOne(Review);
 const updateReview = updateOne(Review);
 
 const deleteReview = deleteOne(Review);
+const suspendReview = catchAsync(async (req, res, next) => {
+  const review = await Review.findById(req.params.id);
+  if (!review) {
+    return next(new AppError('Review not found', 404));
+  }
 
+  // Toggle suspended/active status
+  review.status = review.status ? false : true;
+  await review.save();
+
+  res.status(200).json({
+    status: 'success',
+    data: review,
+  });
+});
 module.exports = {
   getReview,
   setTourUserIds,
@@ -31,4 +46,5 @@ module.exports = {
   createReview,
   deleteReview,
   updateReview,
+  suspendReview,
 };

@@ -8,6 +8,7 @@ const {
   updateUser,
   updateMe,
   deleteMe,
+  toggleSuspendUser,
   getMe,
 } = require('./../controllers/userController');
 const reviewRouter = require('./reviewRoutes');
@@ -42,5 +43,6 @@ router.delete('/deleteMe', deleteMe);
 router.use(restrictTo('admin'));
 router.route('/').get(getAllUsers);
 router.route('/:id').get(getUser).delete(deleteUser).patch(updateUser);
+router.patch('/:id/toggle-suspend', toggleSuspendUser);
 
 module.exports = router;

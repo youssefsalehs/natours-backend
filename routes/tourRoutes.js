@@ -36,7 +36,7 @@ router
 
 router
   .route('/')
-  .get(getAllTours)
+  .get(protect, getAllTours)
   .post(
     protect,
     restrictTo('admin', 'lead-guide'),

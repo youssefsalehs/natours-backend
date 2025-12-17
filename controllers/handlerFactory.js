@@ -64,7 +64,12 @@ const getAll = (Model) =>
     if (req.params.userId) {
       filter = { user: req.params.userId };
     }
-    const features = new APIFeatures(Model.find(filter), req.query)
+    const features = new APIFeatures(
+      Model.find(filter).setOptions({
+        currentUser: req.user,
+      }),
+      req.query
+    )
       .filter()
       .sort()
       .limitFields()

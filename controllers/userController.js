@@ -50,6 +50,8 @@ const updateMe = catchAsync(async (req, res, next) => {
   const updateUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
+  }).setOptions({
+    currentUser: req.user,
   });
   res.status(200).json({
     status: 'success',
@@ -66,10 +68,35 @@ const deleteMe = catchAsync(async (req, res, next) => {
       runValidators: true,
       new: true,
     }
-  );
+  ).setOptions({
+    currentUser: req.user,
+  });
   res.status(204).json({
     status: 'success',
     data: null,
+  });
+});
+
+const toggleSuspendUser = catchAsync(async (req, res, next) => {
+  // First, get the user
+  const user = await User.findById(req.params.id).setOptions({
+    currentUser: req.user,
+  });
+
+  if (!user) {
+    return next(new appError('User not found', 404));
+  }
+
+  // Toggle the active status
+  const updatedUser = await User.findByIdAndUpdate(
+    req.params.id,
+    { active: !user.active },
+    { new: true, runValidators: true }
+  ).setOptions({ currentUser: req.user });
+
+  res.status(200).json({
+    status: 'success',
+    data: updatedUser,
   });
 });
 
@@ -86,4 +113,5 @@ module.exports = {
   updateUser,
   updateMe,
   deleteMe,
+  toggleSuspendUser,
 };

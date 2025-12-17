@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { type } = require('os');
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -53,7 +54,7 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetTokenExpires: Date,
-    active: { type: Boolean, default: true, select: false },
+    active: { type: Boolean, default: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -103,9 +104,14 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 userSchema.pre(/^find/, function (next) {
-  this.find({ active: { $ne: false } });
+  const currentUser = this.getOptions().currentUser;
+
+  if (!currentUser || !['admin', 'lead-guide'].includes(currentUser.role)) {
+    this.find({ active: { $ne: false } });
+  }
 
   next();
 });
+
 const User = mongoose.model('User', userSchema);
 module.exports = User;

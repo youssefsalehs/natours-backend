@@ -130,10 +130,15 @@ tourSchema.pre('save', function (next) {
 });
 ////query middleware runs before  find //this here points to current query
 tourSchema.pre(/^find/, function (next) {
-  this.find({ secretTour: { $ne: true } });
+  const currentUser = this.getOptions()?.currentUser;
+
+  if (!currentUser || !['admin', 'lead-guide'].includes(currentUser.role)) {
+    this.find({ secretTour: { $ne: true } });
+  }
   this.start = Date.now();
   next();
 });
+
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} millieseconds`);
   console.log(docs);
