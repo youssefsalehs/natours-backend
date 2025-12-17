@@ -42,6 +42,7 @@ const addTourToCart = catchAsync(async (req, res, next) => {
       persons,
       date,
       price: tour.price,
+      name: tour.name,
       imageCover: tour.imageCover.url,
       totalPrice: tour.price * persons,
     });

@@ -23,6 +23,7 @@ const cartSchema = new mongoose.Schema(
         date: {
           type: Date,
         },
+        name: { type: String },
         price: {
           type: Number,
           required: true,
