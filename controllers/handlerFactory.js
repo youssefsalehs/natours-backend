@@ -4,7 +4,9 @@ const catchAsync = require('../utils/catchAsync');
 
 const deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    const doc = await Model.findByIdAndDelete(req.params.id).setOptions({
+      currentUser: req.user,
+    });
     if (!doc) {
       return next(new appError('No document is found with this ID', 404));
     }
@@ -18,7 +20,7 @@ const updateOne = (Model) =>
     const updatedDoc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    });
+    }).setOptions({ currentUser: req.user });
     if (!updatedDoc) {
       return next(new appError('No document is found with this ID', 404));
     }
