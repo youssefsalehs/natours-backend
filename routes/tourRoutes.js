@@ -45,7 +45,7 @@ router
   );
 router
   .route('/:id')
-  .get(getTour)
+  .get(protect, getTour)
   .patch(
     protect,
     restrictTo('admin', 'lead-guide'),
