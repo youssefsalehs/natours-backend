@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SK);
-router.post('/create-checkout-session', async (req, res, next) => {
+
+router.post('/create-checkout-session', async (req, res) => {
   try {
     const { tours } = req.body;
 
@@ -18,14 +19,16 @@ router.post('/create-checkout-session', async (req, res, next) => {
     }));
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       line_items: trips,
       mode: 'payment',
       success_url: 'http://localhost:5173/overview',
       cancel_url: 'http://localhost:5173/about',
     });
 
-    res.status(200).json({ id: session.id });
+    // ✅ IMPORTANT CHANGE
+    res.status(200).json({
+      url: session.url,
+    });
   } catch (err) {
     console.error('Stripe error:', err);
     res.status(500).json({ message: err.message });
