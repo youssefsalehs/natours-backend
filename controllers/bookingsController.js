@@ -1,8 +1,8 @@
 const catchAsync = require('../utils/catchAsync');
 const Tour = require('../models/TourModel');
-const { query } = require('express');
 const Booking = require('../models/BookingsModel');
 const stripe = require('stripe')(process.env.STRIPE_SK);
+const User = require('../models/UserModel');
 const getCheckoutSession = catchAsync(async (req, res, next) => {
   const { tourId } = req.params;
   const tour = await Tour.findById(tourId).setOptions({
@@ -48,7 +48,7 @@ const createBookingCheckout = async (session) => {
   await Booking.create({ tour, user: user._id, price });
 };
 
-const webhookCheckout = (req, res) => {
+const webhookCheckout = async (req, res) => {
   const sig = req.headers['stripe-signature'];
 
   let event;
@@ -63,7 +63,7 @@ const webhookCheckout = (req, res) => {
   }
 
   if (event.type === 'checkout.session.completed') {
-    createBookingCheckout(event.data.object);
+    await createBookingCheckout(event.data.object);
   }
 
   res.status(200).json({ received: true });
