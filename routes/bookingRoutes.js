@@ -6,8 +6,7 @@ const {
 } = require('../controllers/bookingsController');
 const { protect } = require('../controllers/authController');
 
-router.use(protect);
-router.get('/checkout-session/:tourId', getCheckoutSession);
+router.get('/checkout-session/:tourId', protect, getCheckoutSession);
 router.post(
   '/webhook',
   express.raw({ type: 'application/json' }),
