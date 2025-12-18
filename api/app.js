@@ -42,6 +42,11 @@ const limiter = rateLimit({
   message: 'too many requests from this ip.try again in an hour.',
 });
 app.use(`/api`, limiter);
+app.post(
+  '/api/v1/bookings/webhook',
+  express.raw({ type: 'application/json' }),
+  require('../controllers/bookingsController').webhookCheckout
+);
 app.use(express.json({ limit: '10kb' }));
 //data sanitization from nosql query injection
 app.use(mongoSanitize());
