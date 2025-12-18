@@ -10,6 +10,8 @@ const hpp = require('hpp');
 const app = express();
 const cookieParser = require('cookie-parser');
 
+const bookingRoute = require('../routes/bookingRoutes.js');
+app.use('/api/v1/bookings/webhook', express.raw({ type: 'application/json' }));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -42,11 +44,7 @@ const limiter = rateLimit({
   message: 'too many requests from this ip.try again in an hour.',
 });
 app.use(`/api`, limiter);
-app.post(
-  '/api/v1/bookings/webhook',
-  express.raw({ type: 'application/json' }),
-  require('../controllers/bookingsController').webhookCheckout
-);
+
 app.use(express.json({ limit: '10kb' }));
 //data sanitization from nosql query injection
 app.use(mongoSanitize());
@@ -67,7 +65,6 @@ const userRoute = require('../routes/userRoutes.js');
 const reviewRoute = require('../routes/reviewRoutes.js');
 const appError = require('../utils/appError.js');
 
-const bookingRoute = require('../routes/bookingRoutes.js');
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/reviews', reviewRoute);
