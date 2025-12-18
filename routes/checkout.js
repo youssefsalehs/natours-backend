@@ -21,7 +21,7 @@ router.post('/create-checkout-session', async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       line_items: trips,
       mode: 'payment',
-      success_url: 'http://localhost:5173/overview',
+      success_url: 'http://localhost:5173/',
       cancel_url: 'http://localhost:5173/about',
     });
 
