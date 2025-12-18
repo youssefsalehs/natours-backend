@@ -10,27 +10,31 @@ const hpp = require('hpp');
 const app = express();
 const cookieParser = require('cookie-parser');
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'https://natours-backend-six.vercel.app/',
-];
-
 const cors = require('cors');
 app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://natours-backend-six.vercel.app',
+      ];
+
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(null, false); // ⬅️ مهم جدًا
       }
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   })
 );
+
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 //1) set security http header
