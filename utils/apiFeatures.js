@@ -18,7 +18,7 @@ class APIFeatures {
     }
 
     if (this.queryString.search) {
-      parsedQuery.title = {
+      parsedQuery.name = {
         $regex: this.queryString.search,
         $options: 'i',
       };
