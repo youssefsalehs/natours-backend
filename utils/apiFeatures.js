@@ -5,8 +5,9 @@ class APIFeatures {
   }
   filter() {
     const queryObj = { ...this.queryString };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    const excludedFields = ['page', 'sort', 'limit', 'fields', 'search'];
     excludedFields.forEach((el) => delete queryObj[el]);
+
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
 
@@ -15,6 +16,14 @@ class APIFeatures {
       const roles = parsedQuery.role.in.split(',');
       parsedQuery.role = { $in: roles };
     }
+
+    if (this.queryString.search) {
+      parsedQuery.title = {
+        $regex: this.queryString.search,
+        $options: 'i',
+      };
+    }
+
     this.query = this.query.find(parsedQuery);
 
     return this;
