@@ -19,7 +19,10 @@ const aliasTopTours = (req, res, next) => {
 };
 
 const getAllTours = getAll(Tour);
-const getTour = getOne(Tour, { path: 'reviews' });
+const getTour = getOne(Tour, {
+  path: 'reviews',
+  options: { sort: { createdAt: -1 } },
+});
 const createTour = catchAsync(async (req, res) => {
   const tourData = { ...req.body };
 
