@@ -26,8 +26,8 @@ const getCheckoutSession = catchAsync(async (req, res, next) => {
       },
     ],
     mode: 'payment',
-    success_url: `http://localhost:5173/`,
-    cancel_url: `http://localhost:5173/tour/${tourId}`,
+    success_url: `https://natours-app-zeta.vercel.app/`,
+    cancel_url: `https://natours-app-zeta.vercel.app/tour/${tourId}`,
     customer_email: req.user.email,
     client_reference_id: tourId,
   });
