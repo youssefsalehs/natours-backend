@@ -9,9 +9,8 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const app = express();
 const cookieParser = require('cookie-parser');
-
+const bookingController = require('../controllers/bookingsController');
 const bookingRoute = require('../routes/bookingRoutes.js');
-app.use('/api/v1/bookings/webhook', express.raw({ type: 'application/json' }));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -46,6 +45,11 @@ const limiter = rateLimit({
 });
 app.use(`/api`, limiter);
 
+app.post(
+  '/api/v1/bookings/webhook',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
 app.use(express.json({ limit: '10kb' }));
 //data sanitization from nosql query injection
 app.use(mongoSanitize());
