@@ -1,4 +1,13 @@
 const express = require('express');
+
+const app = express();
+
+const bookingController = require('../controllers/bookingsController');
+app.post(
+  '/api/v1/bookings/webhook',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
 const path = require('path');
 const morgan = require('morgan');
 const helmet = require('helmet');
@@ -9,7 +18,6 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
-const bookingController = require('../controllers/bookingsController');
 const bookingRoute = require('../routes/bookingRoutes');
 const tourRoute = require('../routes/tourRoutes');
 const userRoute = require('../routes/userRoutes');
@@ -17,8 +25,6 @@ const reviewRoute = require('../routes/reviewRoutes');
 
 const globalErrorHandler = require('../controllers/errorController');
 const appError = require('../utils/appError');
-
-const app = express();
 
 // ---------------- SECURITY ----------------
 app.use(helmet());
@@ -57,11 +63,6 @@ app.use(hpp());
 
 // ---------------- STRIPE WEBHOOK ----------------
 // IMPORTANT: raw body parser BEFORE express.json()
-app.post(
-  '/api/v1/bookings/webhook',
-  express.raw({ type: 'application/json' }),
-  bookingController.webhookCheckout,
-);
 
 // Body parser for all other routes
 app.use(express.json({ limit: '10kb' }));
