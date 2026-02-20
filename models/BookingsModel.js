@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
-const { protect } = require('../controllers/authController');
+
 const bookingSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: [true, 'Booking must belong to  a User'],
+    required: [true, 'Booking must belong to a user'],
   },
   tour: {
     type: mongoose.Schema.ObjectId,
     ref: 'Tour',
-    required: [true, 'Booking must belong to  a tour'],
+    required: [true, 'Booking must belong to a tour'],
   },
   price: {
     type: Number,
@@ -17,13 +17,15 @@ const bookingSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    required: [true, 'Booking must have date'],
+    required: true,
+    default: Date.now,
   },
   paid: {
     type: Boolean,
-    default: true,
+    default: false,
   },
 });
+
 bookingSchema.pre(/^find/, function (next) {
   this.populate('user').populate({
     path: 'tour',

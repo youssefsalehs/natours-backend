@@ -1,16 +1,30 @@
 const express = require('express');
 const path = require('path');
-const globalErrorHandler = require('../controllers/errorController.js');
 const morgan = require('morgan');
-const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
-const app = express();
 const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
+const cors = require('cors');
+
 const bookingController = require('../controllers/bookingsController');
-const bookingRoute = require('../routes/bookingRoutes.js');
+const bookingRoute = require('../routes/bookingRoutes');
+const tourRoute = require('../routes/tourRoutes');
+const userRoute = require('../routes/userRoutes');
+const reviewRoute = require('../routes/reviewRoutes');
+
+const globalErrorHandler = require('../controllers/errorController');
+const appError = require('../utils/appError');
+
+const app = express();
+
+// ---------------- SECURITY ----------------
+app.use(helmet());
+app.use(morgan('dev'));
+app.use(cookieParser());
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
@@ -18,64 +32,50 @@ const allowedOrigins = [
   'https://natours-app-zeta.vercel.app',
 ];
 
-const cors = require('cors');
-app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+      else callback(new Error('Not allowed by CORS'));
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
-  })
+  }),
 );
-app.set('view engine', 'pug');
-app.set('views', path.join(__dirname, 'views'));
-//1) set security http header
-app.use(helmet());
-app.use(morgan('dev'));
+
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
-  message: 'too many requests from this ip.try again in an hour.',
+  message: 'Too many requests from this IP, try again in an hour.',
 });
-app.use(`/api`, limiter);
+app.use('/api', limiter);
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(mongoSanitize());
+app.use(xss());
+app.use(hpp());
+
+// ---------------- STRIPE WEBHOOK ----------------
+// IMPORTANT: raw body parser BEFORE express.json()
 app.post(
   '/api/v1/bookings/webhook',
   express.raw({ type: 'application/json' }),
-  bookingController.webhookCheckout
+  bookingController.webhookCheckout,
 );
+
+// Body parser for all other routes
 app.use(express.json({ limit: '10kb' }));
-//data sanitization from nosql query injection
-app.use(mongoSanitize());
 
-//data sanitization from xss
-app.use(xss());
-app.use(express.static(path.join(__dirname, 'public')));
-if (process.env.NODE_ENV === 'development') app.use(morgan('dev')); //Every incoming request will be logged to your
-//prevent parameter pollution
-app.use(hpp());
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  console.log(req.cookies);
-  next();
-});
-const tourRoute = require('../routes/tourRoutes.js');
-const userRoute = require('../routes/userRoutes.js');
-const reviewRoute = require('../routes/reviewRoutes.js');
-const appError = require('../utils/appError.js');
-
+// ---------------- ROUTES ----------------
 app.use('/api/v1/tours', tourRoute);
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/reviews', reviewRoute);
 app.use('/api/v1/bookings', bookingRoute);
+
+// ---------------- ERROR HANDLING ----------------
 app.all('*', (req, res, next) => {
-  next(new appError(`can't find ${req.originalUrl} on this server`, 404));
+  next(new appError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 app.use(globalErrorHandler);
+
 module.exports = app;
