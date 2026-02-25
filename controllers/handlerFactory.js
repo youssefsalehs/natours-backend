@@ -42,14 +42,14 @@ const createOne = (Model) =>
 const getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
     let query = Model.findById(req.params.id);
-    console.log(popOptions);
+
     if (popOptions) {
       query = Model.findById(req.params.id)
         .setOptions({ currentUser: req.user })
         .populate(popOptions);
     }
     const doc = await query;
-    console.log(doc);
+
     if (!doc) {
       return next(new appError('No document is found with this ID', 404));
     }
@@ -72,7 +72,7 @@ const getAll = (Model) =>
       Model.find(filter).setOptions({
         currentUser: req.user,
       }),
-      req.query
+      req.query,
     )
       .filter()
       .sort()

@@ -3,11 +3,7 @@ const express = require('express');
 const app = express();
 
 const bookingController = require('../controllers/bookingsController');
-app.post(
-  '/api/v1/bookings/webhook',
-  express.raw({ type: 'application/json' }),
-  bookingController.webhookCheckout,
-);
+
 const path = require('path');
 const morgan = require('morgan');
 const helmet = require('helmet');
@@ -62,9 +58,11 @@ app.use(xss());
 app.use(hpp());
 
 // ---------------- STRIPE WEBHOOK ----------------
-// IMPORTANT: raw body parser BEFORE express.json()
-
-// Body parser for all other routes
+app.post(
+  '/webhook',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout,
+);
 app.use(express.json({ limit: '10kb' }));
 
 // ---------------- ROUTES ----------------
